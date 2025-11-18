@@ -50,8 +50,8 @@ function NichosPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await listNichos(filters);
-      setNichos(Array.isArray(data) ? data : []);
+      const { items } = await listNichos(filters);
+      setNichos(items);
     } catch (err) {
       console.error(err);
       setError("No se pudieron cargar los nichos.");
