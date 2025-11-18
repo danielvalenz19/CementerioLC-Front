@@ -6,6 +6,7 @@ const navItems = [
   { label: "Manzanas", path: "/app/manzanas" },
   { label: "Nichos", path: "/app/nichos" },
   { label: "Solicitudes", path: "/app/solicitudes" },
+  { label: "Arrendamientos", path: "/app/arrendamientos" },
   { label: "Propietarios", path: "/app/propietarios" },
   { label: "Perfil", path: "/app/perfil" },
 ];
