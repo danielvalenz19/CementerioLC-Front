@@ -10,6 +10,10 @@ import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import ManzanasPage from "./pages/ManzanasPage";
 import NichosPage from "./pages/NichosPage";
+import PropietariosPage from "./pages/PropietariosPage";
+import PropietarioDetallePage from "./pages/PropietarioDetallePage";
+import SolicitudesPage from "./pages/SolicitudesPage";
+import SolicitudDetallePage from "./pages/SolicitudDetallePage";
 import AppLayout from "./components/layout/AppLayout";
 
 // Ruta protegida: exige access_token en localStorage
@@ -45,6 +49,14 @@ function App() {
           <Route path="manzanas" element={<ManzanasPage />} />
           {/* /app/nichos */}
           <Route path="nichos" element={<NichosPage />} />
+          {/* /app/propietarios (listado) */}
+          <Route path="propietarios" element={<PropietariosPage />} />
+          {/* /app/propietarios/:id (detalle) */}
+          <Route path="propietarios/:id" element={<PropietarioDetallePage />} />
+          {/* /app/solicitudes */}
+          <Route path="solicitudes" element={<SolicitudesPage />} />
+          {/* /app/solicitudes/:id */}
+          <Route path="solicitudes/:id" element={<SolicitudDetallePage />} />
           {/* /app/perfil */}
           <Route path="perfil" element={<ProfilePage />} />
         </Route>

@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 
 const navItems = [
   { label: "Dashboard", path: "/app" },
-  { label: "Manzanas", path: "/app/manzanas" }, // aún no implementado
-  { label: "Nichos", path: "/app/nichos" }, // aún no implementado
-  { label: "Propietarios", path: "/app/propietarios" }, // aún no
+  { label: "Manzanas", path: "/app/manzanas" },
+  { label: "Nichos", path: "/app/nichos" },
+  { label: "Solicitudes", path: "/app/solicitudes" },
+  { label: "Propietarios", path: "/app/propietarios" },
   { label: "Perfil", path: "/app/perfil" },
 ];
 
