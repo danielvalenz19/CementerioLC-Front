@@ -40,7 +40,7 @@ function AppLayout() {
 
   return (
     <div className="app-shell">
-      <Sidebar currentPath={location.pathname} />
+      <Sidebar currentPath={location.pathname} user={user} />
 
       <div className="app-main">
         <TopBar user={user} loading={loadingUser} onLogout={handleLogout} />

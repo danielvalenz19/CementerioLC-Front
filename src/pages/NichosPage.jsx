@@ -10,7 +10,6 @@ import Modal from "../components/common/Modal";
 import Select from "react-select";
 import selectStyles from "../components/common/selectStyles";
 import TablePagination from "../components/common/TablePagination";
-import usePagination from "../hooks/usePagination";
 
 const ESTADOS = ["Disponible", "Reservado", "Ocupado"];
 const ESTADO_OPTIONS = ESTADOS.map((estado) => ({
@@ -26,6 +25,9 @@ function NichosPage() {
     estado: "",
     q: "",
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,7 +37,6 @@ function NichosPage() {
   const [editing, setEditing] = useState(null);
 
   const [selectedNicho, setSelectedNicho] = useState(null); // para panel de detalle
-  const nichosPagination = usePagination(nichos);
 
   // Campos del formulario de creación/edición
   const [formData, setFormData] = useState({
@@ -60,12 +61,19 @@ function NichosPage() {
     }
   }
 
-  async function loadNichos() {
+  async function loadNichos(customPage = page, customFilters = filters) {
     setLoading(true);
     setError("");
     try {
-      const { items } = await listNichos(filters);
+      const response = await listNichos({
+        ...customFilters,
+        page: customPage,
+        pageSize,
+      });
+
+      const items = Array.isArray(response?.data) ? response.data : [];
       setNichos(items);
+      setTotalRecords(response?.total ?? items.length ?? 0);
     } catch (err) {
       console.error(err);
       setError("No se pudieron cargar los nichos.");
@@ -76,7 +84,7 @@ function NichosPage() {
 
   useEffect(() => {
     loadManzanas();
-    loadNichos();
+    loadNichos(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -86,12 +94,27 @@ function NichosPage() {
 
   const applyFilters = (e) => {
     e?.preventDefault();
-    loadNichos();
+    setPage(1);
+    loadNichos(1);
   };
 
   const resetFilters = () => {
-    setFilters({ manzanaId: "", estado: "", q: "" });
-    loadNichos();
+    const defaults = { manzanaId: "", estado: "", q: "" };
+    setFilters(defaults);
+    setPage(1);
+    loadNichos(1, defaults);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+  const rangeStart = totalRecords === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd =
+    totalRecords === 0 ? 0 : Math.min(page * pageSize, totalRecords);
+
+  const goToPage = (nextPage) => {
+    const target = Math.min(Math.max(1, nextPage), totalPages);
+    if (target === page) return;
+    setPage(target);
+    loadNichos(target);
   };
 
   const openCreateModal = () => {
@@ -223,7 +246,10 @@ function NichosPage() {
         <div className="section-header">
           <div>
             <h2>Nichos</h2>
-            <p>Listado de nichos con filtros por manzana y estado.</p>
+            <p>
+              Gestión de espacios. Total:{" "}
+              <strong>{totalRecords}</strong> registros.
+            </p>
           </div>
           <button className="btn-primary" onClick={openCreateModal}>
             Nuevo nicho
@@ -313,7 +339,7 @@ function NichosPage() {
                 <div className="col-actions">Acciones</div>
               </div>
               <div className="data-table-body">
-                {nichosPagination.pageItems.map((n) => (
+                {nichos.map((n) => (
                   <div key={n.id} className="data-table-row">
                     <div>{getManzanaNombre(n)}</div>
                     <div>{n.numero || n.num || n.id}</div>
@@ -356,13 +382,13 @@ function NichosPage() {
               </div>
             </div>
             <TablePagination
-              total={nichosPagination.total}
-              rangeStart={nichosPagination.rangeStart}
-              rangeEnd={nichosPagination.rangeEnd}
-              onPrev={nichosPagination.prevPage}
-              onNext={nichosPagination.nextPage}
-              canPrev={nichosPagination.canPrev}
-              canNext={nichosPagination.canNext}
+              total={totalRecords}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              onPrev={() => goToPage(page - 1)}
+              onNext={() => goToPage(page + 1)}
+              canPrev={page > 1}
+              canNext={page < totalPages}
             />
           </>
         )}

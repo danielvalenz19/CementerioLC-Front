@@ -21,6 +21,7 @@ import TarifasPage from "./pages/TarifasPage";
 import AlertasPage from "./pages/AlertasPage";
 import ReportesPage from "./pages/ReportesPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
+import UsuariosPage from "./pages/UsuariosPage";
 import AppLayout from "./components/layout/AppLayout";
 
 // Ruta protegida: exige access_token en localStorage
@@ -81,6 +82,8 @@ function App() {
           <Route path="reportes" element={<ReportesPage />} />
           {/* /app/auditoria */}
           <Route path="auditoria" element={<AuditoriaPage />} />
+          {/* /app/usuarios */}
+          <Route path="usuarios" element={<UsuariosPage />} />
           {/* /app/perfil */}
           <Route path="perfil" element={<ProfilePage />} />
         </Route>
