@@ -367,12 +367,12 @@ function NichosPage() {
             </div>
 
             <div className="detail-section">
-              <span className="detail-label">Manzana</span>
-              <strong>{getManzanaNombre(selectedNicho)}</strong>
+              <span className="detail-label">Ubicación</span>
+              <strong>Manzana {getManzanaNombre(selectedNicho)}</strong>
             </div>
 
             <div className="detail-section">
-              <span className="detail-label">Estado</span>
+              <span className="detail-label">Estado Actual</span>
               <span
                 className={`tag tag-${
                   (selectedNicho.estado || "").toLowerCase() || "default"
@@ -382,26 +382,77 @@ function NichosPage() {
               </span>
             </div>
 
-            <div className="detail-section">
-              <span className="detail-label">Propietario actual</span>
-              <strong>{getPropietarioNombre(selectedNicho)}</strong>
-            </div>
+            <hr
+              style={{
+                margin: "12px 0",
+                border: "0",
+                borderTop: "1px solid #eee",
+              }}
+            />
 
-            <div className="detail-section">
-              <span className="detail-label">Nombre del difunto</span>
-              <strong>{getDifuntoNombre(selectedNicho)}</strong>
-            </div>
+            {selectedNicho.nombres ||
+            selectedNicho.apellidos ||
+            selectedNicho.arrendamiento_id ? (
+              <>
+                <div className="detail-section">
+                  <span className="detail-label">Propietario</span>
+                  <strong style={{ color: "#4561db" }}>
+                    {getPropietarioNombre(selectedNicho)}
+                  </strong>
+                  {selectedNicho.telefono && (
+                    <div style={{ fontSize: "12px", color: "#666" }}>
+                      Tel: {selectedNicho.telefono}
+                    </div>
+                  )}
+                </div>
 
-            <p className="dash-muted">
-              Aquí luego se puede mostrar el historial de arrendamientos y
-              traspasos consumiendo los endpoints correspondientes.
-            </p>
+                <div className="detail-section">
+                  <span className="detail-label">Difunto en nicho</span>
+                  <strong>{getDifuntoNombre(selectedNicho)}</strong>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "10px",
+                    marginTop: "10px",
+                  }}
+                >
+                  <div className="detail-section">
+                    <span className="detail-label">Fecha Compra/Inicio</span>
+                    <strong>
+                      {selectedNicho.fecha_inicio
+                        ? selectedNicho.fecha_inicio.substring(0, 10)
+                        : "-"}
+                    </strong>
+                  </div>
+                  <div className="detail-section">
+                    <span className="detail-label">Vencimiento</span>
+                    <strong
+                      style={{
+                        color: selectedNicho.fecha_fin ? "" : "green",
+                      }}
+                    >
+                      {selectedNicho.fecha_fin
+                        ? selectedNicho.fecha_fin.substring(0, 10)
+                        : "Indefinido"}
+                    </strong>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="dash-muted">
+                Este nicho está disponible o no tiene un arrendamiento activo
+                asociado.
+              </p>
+            )}
           </>
         ) : (
           <div className="detail-empty">
             <h3>Detalle del nicho</h3>
             <p>
-              Selecciona un nicho en la tabla para ver su información.
+              Selecciona un nicho en la tabla para ver dueño, difunto y fechas.
             </p>
           </div>
         )}

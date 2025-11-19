@@ -8,6 +8,7 @@ const navItems = [
   { label: "Solicitudes", path: "/app/solicitudes" },
   { label: "Arrendamientos", path: "/app/arrendamientos" },
   { label: "Propietarios", path: "/app/propietarios" },
+  { label: "Recibos", path: "/app/recibos" },
   { label: "Perfil", path: "/app/perfil" },
 ];
 
