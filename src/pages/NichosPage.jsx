@@ -7,8 +7,14 @@ import {
 } from "../api/nichos";
 import { getCatalogoManzanas } from "../api/catalogos";
 import Modal from "../components/common/Modal";
+import Select from "react-select";
+import selectStyles from "../components/common/selectStyles";
 
 const ESTADOS = ["Disponible", "Reservado", "Ocupado"];
+const ESTADO_OPTIONS = ESTADOS.map((estado) => ({
+  value: estado,
+  label: estado,
+}));
 
 function NichosPage() {
   const [nichos, setNichos] = useState([]);
@@ -30,11 +36,16 @@ function NichosPage() {
 
   // Campos del formulario de creación/edición
   const [formData, setFormData] = useState({
-    manzana_id: "",
+    manzana_id: null,
     numero: "",
-    estado: "Disponible",
+    estado: ESTADO_OPTIONS[0],
     nombre_difunto: "",
   });
+
+  const manzanaOptions = manzanas.map((m) => ({
+    value: m.id,
+    label: m.nombre,
+  }));
 
   async function loadManzanas() {
     try {
@@ -83,9 +94,9 @@ function NichosPage() {
   const openCreateModal = () => {
     setEditing(null);
     setFormData({
-      manzana_id: "",
+      manzana_id: null,
       numero: "",
-      estado: "Disponible",
+      estado: ESTADO_OPTIONS[0],
       nombre_difunto: "",
     });
     setModalOpen(true);
@@ -95,9 +106,14 @@ function NichosPage() {
     setEditing(n);
 
     setFormData({
-      manzana_id: n.manzana_id || n.manzanaId || "",
+      manzana_id:
+        manzanaOptions.find(
+          (opt) => opt.value === (n.manzana_id || n.manzanaId)
+        ) || null,
       numero: n.numero || n.num || "",
-      estado: n.estado || "Disponible",
+      estado:
+        ESTADO_OPTIONS.find((opt) => opt.value === (n.estado || "Disponible")) ||
+        ESTADO_OPTIONS[0],
       nombre_difunto:
         n.nombre_difunto || n.difunto || n.nombre_difunto_actual || "",
     });
@@ -118,9 +134,9 @@ function NichosPage() {
     setError("");
 
     const payload = {
-      manzana_id: formData.manzana_id,
+      manzana_id: formData.manzana_id.value,
       numero: formData.numero,
-      estado: formData.estado,
+      estado: formData.estado.value,
       nombre_difunto: formData.nombre_difunto || null,
     };
 
@@ -177,6 +193,10 @@ function NichosPage() {
   };
 
   const getPropietarioNombre = (n) => {
+    if (n.nombres || n.apellidos) {
+      return `${n.nombres || ""} ${n.apellidos || ""}`.trim();
+    }
+
     return (
       n.propietario ||
       n.propietario_nombre ||
@@ -429,19 +449,18 @@ function NichosPage() {
         <div className="form-grid">
           <label className="form-label">
             Manzana
-            <select
+            <Select
+              options={manzanaOptions}
               value={formData.manzana_id}
-              onChange={(e) =>
-                handleFormChange("manzana_id", e.target.value)
+              onChange={(option) =>
+                setFormData((prev) => ({ ...prev, manzana_id: option }))
               }
-            >
-              <option value="">Selecciona...</option>
-              {manzanas.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
+              placeholder="Selecciona..."
+              styles={selectStyles}
+              isClearable
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+            />
           </label>
 
           <label className="form-label">
@@ -459,18 +478,16 @@ function NichosPage() {
 
         <label className="form-label">
           Estado
-          <select
+          <Select
+            options={ESTADO_OPTIONS}
             value={formData.estado}
-            onChange={(e) =>
-              handleFormChange("estado", e.target.value)
+            onChange={(option) =>
+              setFormData((prev) => ({ ...prev, estado: option }))
             }
-          >
-            {ESTADOS.map((e) => (
-              <option key={e} value={e}>
-                {e}
-              </option>
-            ))}
-          </select>
+            styles={selectStyles}
+            menuPortalTarget={document.body}
+            menuPosition="fixed"
+          />
         </label>
 
         <label className="form-label">

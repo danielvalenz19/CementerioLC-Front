@@ -8,12 +8,11 @@ export async function fetchCatalogos() {
 
 // Catálogo de propietarios para selects
 export async function fetchCatalogoPropietarios() {
-  const res = await api.get("/api/catalogos/propietarios");
+  const res = await api.get("/api/propietarios");
   const payload = res.data;
 
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.propietarios)) return payload.propietarios;
   if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload)) return payload;
 
   return [];
 }

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import { listSolicitudes, createSolicitud } from "../api/solicitudes";
 import { fetchCatalogoPropietarios } from "../api/catalogosApi";
 import { fetchNichosDisponibles } from "../api/nichosApi";
 import Modal from "../components/common/Modal";
+import selectStyles from "../components/common/selectStyles";
 
 const ESTADOS = ["Todos", "Pendiente", "Aprobada", "Rechazada"];
 
@@ -15,12 +17,11 @@ function getEstadoTagClass(estado) {
 }
 
 function getPropietarioNombre(s) {
-  return (
-    s.propietario_nombre ||
-    s.propietario ||
-    s.nombre_propietario ||
-    "-"
-  );
+  if (s.nombres || s.apellidos) {
+    return `${s.nombres || ""} ${s.apellidos || ""}`.trim();
+  }
+
+  return s.propietario_nombre || s.propietario || "-";
 }
 
 function getNichoLabel(s) {
@@ -41,17 +42,17 @@ function SolicitudesPage() {
   });
 
   const [solicitudes, setSolicitudes] = useState([]);
-  const [propietariosCat, setPropietariosCat] = useState([]);
-  const [nichosDisponibles, setNichosDisponibles] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [propietariosOptions, setPropietariosOptions] = useState([]);
+  const [nichosOptions, setNichosOptions] = useState([]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    propietario_id: "",
-    nicho_id: "",
+    propietario_id: null,
+    nicho_id: null,
   });
 
   useEffect(() => {
@@ -62,8 +63,23 @@ function SolicitudesPage() {
           fetchNichosDisponibles(),
         ]);
 
-        setPropietariosCat(Array.isArray(propCats) ? propCats : []);
-        setNichosDisponibles(Array.isArray(nichosDisp) ? nichosDisp : []);
+        const propsRaw = Array.isArray(propCats) ? propCats : [];
+        const pOptions = propsRaw.map((p) => ({
+          value: p.id,
+          label: `${p.nombres || ""} ${p.apellidos || ""} (DPI: ${
+            p.dpi || "N/D"
+          })`.trim(),
+        }));
+        setPropietariosOptions(pOptions);
+
+        const nichosRaw = Array.isArray(nichosDisp) ? nichosDisp : [];
+        const nOptions = nichosRaw.map((n) => ({
+          value: n.id,
+          label: `${n.manzana || n.manzana_nombre || "?"} · Nicho ${
+            n.numero || n.nicho || n.id
+          }`,
+        }));
+        setNichosOptions(nOptions);
       } catch (err) {
         console.error("Error cargando catálogos para solicitudes", err);
       }
@@ -109,24 +125,13 @@ function SolicitudesPage() {
   };
 
   const clearFilters = () => {
-    const reset = {
-      estado: "Todos",
-      propietarioId: "all",
-      nichoId: "",
-    };
+    const reset = { estado: "Todos", propietarioId: "all", nichoId: "" };
     loadSolicitudes(reset);
   };
 
   const openCreateModal = () => {
-    setFormData({
-      propietario_id: "",
-      nicho_id: "",
-    });
+    setFormData({ propietario_id: null, nicho_id: null });
     setModalOpen(true);
-  };
-
-  const handleFormChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSaveSolicitud = async () => {
@@ -136,8 +141,8 @@ function SolicitudesPage() {
     setError("");
 
     const payload = {
-      propietario_id: Number(formData.propietario_id),
-      nicho_id: Number(formData.nicho_id),
+      propietario_id: formData.propietario_id.value,
+      nicho_id: formData.nicho_id.value,
     };
 
     try {
@@ -174,9 +179,7 @@ function SolicitudesPage() {
             Estado
             <select
               value={filters.estado}
-              onChange={(e) =>
-                handleFilterChange("estado", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("estado", e.target.value)}
             >
               {ESTADOS.map((e) => (
                 <option key={e} value={e}>
@@ -195,9 +198,9 @@ function SolicitudesPage() {
               }
             >
               <option value="all">Todos</option>
-              {propietariosCat.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre_completo || p.nombre || p.label || `ID ${p.id}`}
+              {propietariosOptions.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
                 </option>
               ))}
             </select>
@@ -255,9 +258,7 @@ function SolicitudesPage() {
               <div>{getPropietarioNombre(s)}</div>
               <div>{getNichoLabel(s)}</div>
               <div>
-                <span
-                  className={`tag ${getEstadoTagClass(s.estado)}`}
-                >
+                <span className={`tag ${getEstadoTagClass(s.estado)}`}>
                   {s.estado || "N/D"}
                 </span>
               </div>
@@ -296,9 +297,7 @@ function SolicitudesPage() {
               className="btn-primary"
               type="button"
               disabled={
-                saving ||
-                !formData.propietario_id ||
-                !formData.nicho_id
+                saving || !formData.propietario_id || !formData.nicho_id
               }
               onClick={handleSaveSolicitud}
             >
@@ -307,40 +306,66 @@ function SolicitudesPage() {
           </>
         }
       >
-        <label className="form-label">
-          Propietario
-          <select
-            value={formData.propietario_id}
-            onChange={(e) =>
-              handleFormChange("propietario_id", e.target.value)
-            }
-          >
-            <option value="">Selecciona un propietario...</option>
-            {propietariosCat.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre_completo || p.nombre || p.label || `ID ${p.id}`}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            minHeight: "240px",
+          }}
+        >
+          <label className="filter-label">
+            <strong>1. Busca el Propietario</strong>
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#6b7280",
+                marginBottom: "4px",
+                display: "block",
+              }}
+            >
+              Puedes buscar por nombre o DPI
+            </span>
+            <Select
+              options={propietariosOptions}
+              value={formData.propietario_id}
+              onChange={(option) =>
+                setFormData({ ...formData, propietario_id: option })
+              }
+              placeholder="Escribe para buscar..."
+              styles={selectStyles}
+              isClearable
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+            />
+          </label>
 
-        <label className="form-label">
-          Nicho disponible
-          <select
-            value={formData.nicho_id}
-            onChange={(e) =>
-              handleFormChange("nicho_id", e.target.value)
-            }
-          >
-            <option value="">Selecciona un nicho...</option>
-            {nichosDisponibles.map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.manzana || n.manzana_nombre || "Manzana ?"} · Nicho {" "}
-                {n.numero || n.nicho || n.id}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="filter-label">
+            <strong>2. Selecciona el Nicho disponible</strong>
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#6b7280",
+                marginBottom: "4px",
+                display: "block",
+              }}
+            >
+              Solo aparecen nichos con estado "Disponible"
+            </span>
+            <Select
+              options={nichosOptions}
+              value={formData.nicho_id}
+              onChange={(option) =>
+                setFormData({ ...formData, nicho_id: option })
+              }
+              placeholder="Busca por manzana o número..."
+              styles={selectStyles}
+              isClearable
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+            />
+          </label>
+        </div>
       </Modal>
     </div>
   );

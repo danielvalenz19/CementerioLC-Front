@@ -94,15 +94,30 @@ function PropietariosPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.nombre_completo.trim() || !formData.dpi.trim()) {
+    if (!formData.nombre_completo.trim()) {
+      setError("El nombre es obligatorio");
       return;
     }
 
     setSaving(true);
     setError("");
 
+    const nombreStr = formData.nombre_completo.trim();
+    const primerEspacio = nombreStr.indexOf(" ");
+    let nombresEnvio = "";
+    let apellidosEnvio = "";
+
+    if (primerEspacio === -1) {
+      nombresEnvio = nombreStr;
+      apellidosEnvio = "(Sin apellido)";
+    } else {
+      nombresEnvio = nombreStr.substring(0, primerEspacio);
+      apellidosEnvio = nombreStr.substring(primerEspacio + 1);
+    }
+
     const payload = {
-      nombre_completo: formData.nombre_completo.trim(),
+      nombres: nombresEnvio,
+      apellidos: apellidosEnvio,
       dpi: formData.dpi.trim(),
       telefono: formData.telefono.trim() || null,
       direccion: formData.direccion.trim() || null,
@@ -117,10 +132,18 @@ function PropietariosPage() {
 
       setModalOpen(false);
       setEditing(null);
+      setFormData({
+        nombre_completo: "",
+        dpi: "",
+        telefono: "",
+        direccion: "",
+      });
       await loadPropietarios();
     } catch (err) {
       console.error(err);
-      setError("Error al guardar el propietario. Revisa los datos.");
+      const msg = err.response?.data?.message ||
+        "Error al guardar el propietario.";
+      setError(msg);
     } finally {
       setSaving(false);
     }
