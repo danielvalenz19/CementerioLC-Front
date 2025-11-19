@@ -4,6 +4,8 @@ import {
   getReporteArrendamientos,
   getReporteCartera,
 } from "../api/reportes";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 // --- PESTAÑA 1: OCUPACIÓN ---
 function TabOcupacion() {
@@ -66,6 +68,7 @@ function TabArrendamientos() {
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [loading, setLoading] = useState(false);
+  const arrPagination = usePagination(data);
 
   const cargar = () => {
     setLoading(true);
@@ -99,24 +102,46 @@ function TabArrendamientos() {
       ) : data.length === 0 ? (
         <div className="empty-state">Sin resultados.</div>
       ) : (
-        <div className="data-table">
-          <div className="data-table-header" style={{ gridTemplateColumns: "0.5fr 1.5fr 1fr 1fr" }}>
-            <div>ID</div>
-            <div>Propietario</div>
-            <div>Nicho</div>
-            <div>Fecha Inicio</div>
-          </div>
-          {data.map((a) => (
-            <div key={a.id} className="data-table-row" style={{ gridTemplateColumns: "0.5fr 1.5fr 1fr 1fr" }}>
-              <div>#{a.id}</div>
-              <div>
-                {a.nombres} {a.apellidos}
-              </div>
-              <div>Nicho {a.numero_nicho}</div>
-              <div>{a.fecha_inicio ? a.fecha_inicio.substring(0, 10) : "-"}</div>
+        <>
+          <div className="data-table">
+            <div
+              className="data-table-header"
+              style={{ gridTemplateColumns: "0.5fr 1.5fr 1fr 1fr" }}
+            >
+              <div>ID</div>
+              <div>Propietario</div>
+              <div>Nicho</div>
+              <div>Fecha Inicio</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {arrPagination.pageItems.map((a) => (
+                <div
+                  key={a.id}
+                  className="data-table-row"
+                  style={{ gridTemplateColumns: "0.5fr 1.5fr 1fr 1fr" }}
+                >
+                  <div>#{a.id}</div>
+                  <div>
+                    {a.nombres} {a.apellidos}
+                  </div>
+                  <div>Nicho {a.numero_nicho}</div>
+                  <div>
+                    {a.fecha_inicio ? a.fecha_inicio.substring(0, 10) : "-"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={arrPagination.total}
+            rangeStart={arrPagination.rangeStart}
+            rangeEnd={arrPagination.rangeEnd}
+            onPrev={arrPagination.prevPage}
+            onNext={arrPagination.nextPage}
+            canPrev={arrPagination.canPrev}
+            canNext={arrPagination.canNext}
+          />
+        </>
       )}
     </div>
   );
@@ -126,6 +151,7 @@ function TabArrendamientos() {
 function TabCartera() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const carteraPagination = usePagination(data);
 
   useEffect(() => {
     getReporteCartera().then(setData).finally(() => setLoading(false));
@@ -137,23 +163,43 @@ function TabCartera() {
   return (
     <div style={{ marginTop: "16px" }}>
       <div className="data-table">
-        <div className="data-table-header" style={{ gridTemplateColumns: "1.5fr 1fr 1fr 1fr" }}>
+        <div
+          className="data-table-header"
+          style={{ gridTemplateColumns: "1.5fr 1fr 1fr 1fr" }}
+        >
           <div>Deudor</div>
           <div>Nicho</div>
           <div>Venció el</div>
           <div>Días de Mora</div>
         </div>
-        {data.map((c, i) => (
-          <div key={i} className="data-table-row" style={{ gridTemplateColumns: "1.5fr 1fr 1fr 1fr" }}>
-            <div style={{ fontWeight: 600 }}>
-              {c.nombres} {c.apellidos}
+        <div className="data-table-body">
+          {carteraPagination.pageItems.map((c, i) => (
+            <div
+              key={`${c.arrendamiento_id || i}-${i}`}
+              className="data-table-row"
+              style={{ gridTemplateColumns: "1.5fr 1fr 1fr 1fr" }}
+            >
+              <div style={{ fontWeight: 600 }}>
+                {c.nombres} {c.apellidos}
+              </div>
+              <div>Nicho {c.numero_nicho}</div>
+              <div>{c.fecha_fin ? c.fecha_fin.substring(0, 10) : "-"}</div>
+              <div style={{ color: "red", fontWeight: "bold" }}>
+                {c.dias_mora} días
+              </div>
             </div>
-            <div>Nicho {c.numero_nicho}</div>
-            <div>{c.fecha_fin ? c.fecha_fin.substring(0, 10) : "-"}</div>
-            <div style={{ color: "red", fontWeight: "bold" }}>{c.dias_mora} días</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      <TablePagination
+        total={carteraPagination.total}
+        rangeStart={carteraPagination.rangeStart}
+        rangeEnd={carteraPagination.rangeEnd}
+        onPrev={carteraPagination.prevPage}
+        onNext={carteraPagination.nextPage}
+        canPrev={carteraPagination.canPrev}
+        canNext={carteraPagination.canNext}
+      />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { fetchCatalogoPropietarios } from "../api/catalogosApi";
 import { fetchNichosDisponibles } from "../api/nichosApi";
 import Modal from "../components/common/Modal";
 import selectStyles from "../components/common/selectStyles";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 const ESTADOS = ["Todos", "Vigente", "Vencido"];
 
@@ -75,6 +77,7 @@ function ArrendamientosPage() {
     nombre_difunto: "",
     recibo_id: "",
   });
+  const arrendamientosPagination = usePagination(arrendamientos);
 
   // Catálogos
   useEffect(() => {
@@ -305,44 +308,57 @@ function ArrendamientosPage() {
           No se encontraron arrendamientos con estos filtros.
         </div>
       ) : (
-        <div className="data-table data-table-arrendamientos">
-          <div className="data-table-header">
-            <div>Propietario</div>
-            <div>Nicho</div>
-            <div>Fecha inicio</div>
-            <div>Fecha fin</div>
-            <div>Estado</div>
-            <div>Difunto</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {arrendamientos.map((a) => (
-            <div key={a.id} className="data-table-row">
-              <div>{getPropietarioNombre(a)}</div>
-              <div>{getNichoLabel(a)}</div>
-              <div>{a.fecha_inicio || "-"}</div>
-              <div>{a.fecha_fin || "-"}</div>
-              <div>
-                <span
-                  className={`tag ${getEstadoVirtualTagClass(
-                    a.estado_virtual || a.estado
-                  )}`}
-                >
-                  {a.estado_virtual || a.estado || "N/D"}
-                </span>
-              </div>
-              <div>{getDifuntoNombre(a)}</div>
-              <div className="col-actions">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => goToDetalle(a)}
-                >
-                  Ver
-                </button>
-              </div>
+        <>
+          <div className="data-table data-table-arrendamientos">
+            <div className="data-table-header">
+              <div>Propietario</div>
+              <div>Nicho</div>
+              <div>Fecha inicio</div>
+              <div>Fecha fin</div>
+              <div>Estado</div>
+              <div>Difunto</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {arrendamientosPagination.pageItems.map((a) => (
+                <div key={a.id} className="data-table-row">
+                  <div>{getPropietarioNombre(a)}</div>
+                  <div>{getNichoLabel(a)}</div>
+                  <div>{a.fecha_inicio || "-"}</div>
+                  <div>{a.fecha_fin || "-"}</div>
+                  <div>
+                    <span
+                      className={`tag ${getEstadoVirtualTagClass(
+                        a.estado_virtual || a.estado
+                      )}`}
+                    >
+                      {a.estado_virtual || a.estado || "N/D"}
+                    </span>
+                  </div>
+                  <div>{getDifuntoNombre(a)}</div>
+                  <div className="col-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => goToDetalle(a)}
+                    >
+                      Ver
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={arrendamientosPagination.total}
+            rangeStart={arrendamientosPagination.rangeStart}
+            rangeEnd={arrendamientosPagination.rangeEnd}
+            onPrev={arrendamientosPagination.prevPage}
+            onNext={arrendamientosPagination.nextPage}
+            canPrev={arrendamientosPagination.canPrev}
+            canNext={arrendamientosPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

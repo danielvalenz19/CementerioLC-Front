@@ -6,6 +6,8 @@ import { fetchCatalogoPropietarios } from "../api/catalogosApi";
 import { fetchNichosDisponibles } from "../api/nichosApi";
 import Modal from "../components/common/Modal";
 import selectStyles from "../components/common/selectStyles";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 const ESTADOS = ["Todos", "Pendiente", "Aprobada", "Rechazada"];
 
@@ -54,6 +56,7 @@ function SolicitudesPage() {
     propietario_id: null,
     nicho_id: null,
   });
+  const solicitudesPagination = usePagination(solicitudes);
 
   useEffect(() => {
     async function loadCatalogos() {
@@ -242,38 +245,51 @@ function SolicitudesPage() {
           No se encontraron solicitudes con estos filtros.
         </div>
       ) : (
-        <div className="data-table">
-          <div className="data-table-header">
-            <div>ID</div>
-            <div>Fecha</div>
-            <div>Propietario</div>
-            <div>Nicho</div>
-            <div>Estado</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {solicitudes.map((s) => (
-            <div key={s.id} className="data-table-row">
-              <div>{s.id}</div>
-              <div>{s.fecha_solicitud || s.fecha || "-"}</div>
-              <div>{getPropietarioNombre(s)}</div>
-              <div>{getNichoLabel(s)}</div>
-              <div>
-                <span className={`tag ${getEstadoTagClass(s.estado)}`}>
-                  {s.estado || "N/D"}
-                </span>
-              </div>
-              <div className="col-actions">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => goToDetalle(s)}
-                >
-                  Ver
-                </button>
-              </div>
+        <>
+          <div className="data-table">
+            <div className="data-table-header">
+              <div>ID</div>
+              <div>Fecha</div>
+              <div>Propietario</div>
+              <div>Nicho</div>
+              <div>Estado</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {solicitudesPagination.pageItems.map((s) => (
+                <div key={s.id} className="data-table-row">
+                  <div>{s.id}</div>
+                  <div>{s.fecha_solicitud || s.fecha || "-"}</div>
+                  <div>{getPropietarioNombre(s)}</div>
+                  <div>{getNichoLabel(s)}</div>
+                  <div>
+                    <span className={`tag ${getEstadoTagClass(s.estado)}`}>
+                      {s.estado || "N/D"}
+                    </span>
+                  </div>
+                  <div className="col-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => goToDetalle(s)}
+                    >
+                      Ver
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={solicitudesPagination.total}
+            rangeStart={solicitudesPagination.rangeStart}
+            rangeEnd={solicitudesPagination.rangeEnd}
+            onPrev={solicitudesPagination.prevPage}
+            onNext={solicitudesPagination.nextPage}
+            canPrev={solicitudesPagination.canPrev}
+            canNext={solicitudesPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { listAuditoria } from "../api/auditoria";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 function AuditoriaPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const logsPagination = usePagination(logs);
 
   // Estado para los filtros
   const [filters, setFilters] = useState({
@@ -131,40 +134,53 @@ function AuditoriaPage() {
           No se encontraron registros con estos criterios.
         </div>
       ) : (
-        <div className="data-table">
-          <div
-            className="data-table-header"
-            style={{ gridTemplateColumns: "0.5fr 1.5fr 1.5fr 2fr" }}
-          >
-            <div>ID</div>
-            <div>Fecha / Hora</div>
-            <div>Usuario</div>
-            <div>Acción Realizada</div>
-          </div>
-          {logs.map((log) => (
+        <>
+          <div className="data-table">
             <div
-              key={log.id}
-              className="data-table-row"
+              className="data-table-header"
               style={{ gridTemplateColumns: "0.5fr 1.5fr 1.5fr 2fr" }}
             >
-              <div style={{ color: "#6b7280" }}>#{log.id}</div>
-              <div style={{ fontSize: "13px" }}>
-                {log.fecha ? new Date(log.fecha).toLocaleString() : "-"}
-              </div>
-              <div style={{ fontWeight: 500 }}>
-                {log.usuario || `Usuario ID ${log.usuario_id}`}
-              </div>
-              <div>
-                <span
-                  className="tag tag-default"
-                  style={{ textTransform: "none", fontSize: "13px" }}
-                >
-                  {log.accion}
-                </span>
-              </div>
+              <div>ID</div>
+              <div>Fecha / Hora</div>
+              <div>Usuario</div>
+              <div>Acción Realizada</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {logsPagination.pageItems.map((log) => (
+                <div
+                  key={log.id}
+                  className="data-table-row"
+                  style={{ gridTemplateColumns: "0.5fr 1.5fr 1.5fr 2fr" }}
+                >
+                  <div style={{ color: "#6b7280" }}>#{log.id}</div>
+                  <div style={{ fontSize: "13px" }}>
+                    {log.fecha ? new Date(log.fecha).toLocaleString() : "-"}
+                  </div>
+                  <div style={{ fontWeight: 500 }}>
+                    {log.usuario || `Usuario ID ${log.usuario_id}`}
+                  </div>
+                  <div>
+                    <span
+                      className="tag tag-default"
+                      style={{ textTransform: "none", fontSize: "13px" }}
+                    >
+                      {log.accion}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={logsPagination.total}
+            rangeStart={logsPagination.rangeStart}
+            rangeEnd={logsPagination.rangeEnd}
+            onPrev={logsPagination.prevPage}
+            onNext={logsPagination.nextPage}
+            canPrev={logsPagination.canPrev}
+            canNext={logsPagination.canNext}
+          />
+        </>
       )}
     </div>
   );

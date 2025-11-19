@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { listRecibos, createRecibo } from "../api/recibos";
 import Modal from "../components/common/Modal";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 const moneyFormatter = new Intl.NumberFormat("es-GT", {
   style: "currency",
@@ -24,6 +26,7 @@ function RecibosPage() {
     fecha_pago: "",
   });
   const [saving, setSaving] = useState(false);
+  const recibosPagination = usePagination(recibos);
 
   async function loadRecibos(filterState = filters) {
     setLoading(true);
@@ -167,61 +170,74 @@ function RecibosPage() {
           No hay recibos registrados en este rango.
         </div>
       ) : (
-        <div className="data-table">
-          <div
-            className="data-table-header"
-            style={{
-              gridTemplateColumns: "1fr 1fr 1.2fr 2fr 1.4fr 0.8fr",
-            }}
-          >
-            <div>Nº Recibo</div>
-            <div>Fecha</div>
-            <div>Monto</div>
-            <div>Propietario / Pagador</div>
-            <div>Concepto</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {recibos.map((r) => (
+        <>
+          <div className="data-table">
             <div
-              key={r.id}
-              className="data-table-row"
+              className="data-table-header"
               style={{
                 gridTemplateColumns: "1fr 1fr 1.2fr 2fr 1.4fr 0.8fr",
               }}
             >
-              <div style={{ fontWeight: 600 }}>{r.numero_recibo}</div>
-              <div>{r.fecha_pago ? r.fecha_pago.substring(0, 10) : "-"}</div>
-              <div
-                style={{
-                  fontFamily: "monospace",
-                  fontWeight: "bold",
-                  color: "#166534",
-                }}
-              >
-                {moneyFormatter.format(Number(r.monto || 0))}
-              </div>
-              <div>{r.propietario_nombre || "-"}</div>
-              <div>
-                <span
-                  className="tag tag-default"
-                  style={{ fontSize: "11px", textTransform: "none" }}
-                >
-                  {r.concepto}
-                </span>
-              </div>
-              <div className="col-actions">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => handlePrint(r)}
-                  title="Imprimir/Descargar"
-                >
-                  🖨️
-                </button>
-              </div>
+              <div>Nº Recibo</div>
+              <div>Fecha</div>
+              <div>Monto</div>
+              <div>Propietario / Pagador</div>
+              <div>Concepto</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {recibosPagination.pageItems.map((r) => (
+                <div
+                  key={r.id}
+                  className="data-table-row"
+                  style={{
+                    gridTemplateColumns: "1fr 1fr 1.2fr 2fr 1.4fr 0.8fr",
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{r.numero_recibo}</div>
+                  <div>{r.fecha_pago ? r.fecha_pago.substring(0, 10) : "-"}</div>
+                  <div
+                    style={{
+                      fontFamily: "monospace",
+                      fontWeight: "bold",
+                      color: "#166534",
+                    }}
+                  >
+                    {moneyFormatter.format(Number(r.monto || 0))}
+                  </div>
+                  <div>{r.propietario_nombre || "-"}</div>
+                  <div>
+                    <span
+                      className="tag tag-default"
+                      style={{ fontSize: "11px", textTransform: "none" }}
+                    >
+                      {r.concepto}
+                    </span>
+                  </div>
+                  <div className="col-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => handlePrint(r)}
+                      title="Imprimir/Descargar"
+                    >
+                      🖨️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={recibosPagination.total}
+            rangeStart={recibosPagination.rangeStart}
+            rangeEnd={recibosPagination.rangeEnd}
+            onPrev={recibosPagination.prevPage}
+            onNext={recibosPagination.nextPage}
+            canPrev={recibosPagination.canPrev}
+            canNext={recibosPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

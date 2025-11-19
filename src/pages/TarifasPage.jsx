@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { listTarifas, createTarifa, updateTarifa } from "../api/tarifas";
 import Modal from "../components/common/Modal";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 const moneyFormatter = new Intl.NumberFormat("es-GT", {
   style: "currency",
@@ -26,6 +28,7 @@ function TarifasPage() {
     vigencia_desde: "",
     vigencia_hasta: "",
   });
+  const tarifasPagination = usePagination(tarifas);
 
   // Cargar datos
   const loadTarifas = async () => {
@@ -132,51 +135,64 @@ function TarifasPage() {
       ) : tarifas.length === 0 ? (
         <div className="empty-state">No hay tarifas registradas aún.</div>
       ) : (
-        <div className="data-table">
-          <div
-            className="data-table-header"
-            style={{ gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 1fr 0.8fr" }}
-          >
-            <div>Concepto</div>
-            <div>Alcance</div>
-            <div>Monto</div>
-            <div>Vigencia Desde</div>
-            <div>Vigencia Hasta</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {tarifas.map((t) => (
+        <>
+          <div className="data-table">
             <div
-              key={t.id}
-              className="data-table-row"
+              className="data-table-header"
               style={{ gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 1fr 0.8fr" }}
             >
-              <div style={{ fontWeight: 500 }}>{t.concepto}</div>
-              <div style={{ color: "#6b7280", fontSize: "13px" }}>
-                {t.alcance || "-"}
-              </div>
-              <div style={{ fontWeight: "bold", color: "#166534" }}>
-                {t.moneda === "USD"
-                  ? `$${t.monto}`
-                  : moneyFormatter.format(t.monto)}
-              </div>
-              <div>
-                {t.vigencia_desde ? t.vigencia_desde.substring(0, 10) : "-"}
-              </div>
-              <div>
-                {t.vigencia_hasta ? (
-                  t.vigencia_hasta.substring(0, 10)
-                ) : (
-                  <span className="tag tag-vigente">Indefinido</span>
-                )}
-              </div>
-              <div className="col-actions">
-                <button className="btn-ghost" onClick={() => openEditModal(t)}>
-                  Editar
-                </button>
-              </div>
+              <div>Concepto</div>
+              <div>Alcance</div>
+              <div>Monto</div>
+              <div>Vigencia Desde</div>
+              <div>Vigencia Hasta</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {tarifasPagination.pageItems.map((t) => (
+                <div
+                  key={t.id}
+                  className="data-table-row"
+                  style={{ gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 1fr 0.8fr" }}
+                >
+                  <div style={{ fontWeight: 500 }}>{t.concepto}</div>
+                  <div style={{ color: "#6b7280", fontSize: "13px" }}>
+                    {t.alcance || "-"}
+                  </div>
+                  <div style={{ fontWeight: "bold", color: "#166534" }}>
+                    {t.moneda === "USD"
+                      ? `$${t.monto}`
+                      : moneyFormatter.format(t.monto)}
+                  </div>
+                  <div>
+                    {t.vigencia_desde ? t.vigencia_desde.substring(0, 10) : "-"}
+                  </div>
+                  <div>
+                    {t.vigencia_hasta ? (
+                      t.vigencia_hasta.substring(0, 10)
+                    ) : (
+                      <span className="tag tag-vigente">Indefinido</span>
+                    )}
+                  </div>
+                  <div className="col-actions">
+                    <button className="btn-ghost" onClick={() => openEditModal(t)}>
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={tarifasPagination.total}
+            rangeStart={tarifasPagination.rangeStart}
+            rangeEnd={tarifasPagination.rangeEnd}
+            onPrev={tarifasPagination.prevPage}
+            onNext={tarifasPagination.nextPage}
+            canPrev={tarifasPagination.canPrev}
+            canNext={tarifasPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

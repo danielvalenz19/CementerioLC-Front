@@ -6,6 +6,8 @@ import {
   deleteManzana,
 } from "../api/manzanas";
 import Modal from "../components/common/Modal";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 function ManzanasPage() {
   const [manzanas, setManzanas] = useState([]);
@@ -17,6 +19,7 @@ function ManzanasPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null); // manzana o null
   const [nombreInput, setNombreInput] = useState("");
+  const manzanasPagination = usePagination(manzanas);
 
   async function loadManzanas() {
     setLoading(true);
@@ -136,35 +139,48 @@ function ManzanasPage() {
       ) : manzanas.length === 0 ? (
         <div className="empty-state">No se encontraron manzanas.</div>
       ) : (
-        <div className="data-table">
-          <div className="data-table-header">
-            <div>ID</div>
-            <div>Nombre</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {manzanas.map((m) => (
-            <div key={m.id} className="data-table-row">
-              <div>{m.id}</div>
-              <div>{m.nombre}</div>
-              <div className="col-actions">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => openEditModal(m)}
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  className="btn-danger-ghost"
-                  onClick={() => handleDelete(m)}
-                >
-                  Eliminar
-                </button>
-              </div>
+        <>
+          <div className="data-table">
+            <div className="data-table-header">
+              <div>ID</div>
+              <div>Nombre</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {manzanasPagination.pageItems.map((m) => (
+                <div key={m.id} className="data-table-row">
+                  <div>{m.id}</div>
+                  <div>{m.nombre}</div>
+                  <div className="col-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => openEditModal(m)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-danger-ghost"
+                      onClick={() => handleDelete(m)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={manzanasPagination.total}
+            rangeStart={manzanasPagination.rangeStart}
+            rangeEnd={manzanasPagination.rangeEnd}
+            onPrev={manzanasPagination.prevPage}
+            onNext={manzanasPagination.nextPage}
+            canPrev={manzanasPagination.canPrev}
+            canNext={manzanasPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

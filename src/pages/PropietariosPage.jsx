@@ -7,6 +7,8 @@ import {
 } from "../api/propietarios";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/common/Modal";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 function getNombre(p) {
   return (
@@ -42,6 +44,7 @@ function PropietariosPage() {
     telefono: "",
     direccion: "",
   });
+  const propietariosPagination = usePagination(propietarios);
 
   async function loadPropietarios() {
     setLoading(true);
@@ -216,46 +219,59 @@ function PropietariosPage() {
           No se encontraron propietarios con este criterio.
         </div>
       ) : (
-        <div className="data-table">
-          <div className="data-table-header">
-            <div>Nombre completo</div>
-            <div>DPI</div>
-            <div>Teléfono</div>
-            <div>Dirección</div>
-            <div className="col-actions">Acciones</div>
-          </div>
-          {propietarios.map((p) => (
-            <div key={p.id} className="data-table-row">
-              <div>{getNombre(p)}</div>
-              <div>{p.dpi || "-"}</div>
-              <div>{getTelefono(p)}</div>
-              <div>{getDireccion(p)}</div>
-              <div className="col-actions">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => goToDetail(p)}
-                >
-                  Ver
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => openEditModal(p)}
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  className="btn-danger-ghost"
-                  onClick={() => handleDelete(p)}
-                >
-                  Eliminar
-                </button>
-              </div>
+        <>
+          <div className="data-table">
+            <div className="data-table-header">
+              <div>Nombre completo</div>
+              <div>DPI</div>
+              <div>Teléfono</div>
+              <div>Dirección</div>
+              <div className="col-actions">Acciones</div>
             </div>
-          ))}
-        </div>
+            <div className="data-table-body">
+              {propietariosPagination.pageItems.map((p) => (
+                <div key={p.id} className="data-table-row">
+                  <div>{getNombre(p)}</div>
+                  <div>{p.dpi || "-"}</div>
+                  <div>{getTelefono(p)}</div>
+                  <div>{getDireccion(p)}</div>
+                  <div className="col-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => goToDetail(p)}
+                    >
+                      Ver
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => openEditModal(p)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-danger-ghost"
+                      onClick={() => handleDelete(p)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <TablePagination
+            total={propietariosPagination.total}
+            rangeStart={propietariosPagination.rangeStart}
+            rangeEnd={propietariosPagination.rangeEnd}
+            onPrev={propietariosPagination.prevPage}
+            onNext={propietariosPagination.nextPage}
+            canPrev={propietariosPagination.canPrev}
+            canNext={propietariosPagination.canNext}
+          />
+        </>
       )}
 
       <Modal

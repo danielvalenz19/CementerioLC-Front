@@ -362,12 +362,6 @@ body {
   color: var(--text-muted);
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1.6fr);
-  gap: 20px;
-}
-
 .dash-card {
   background: var(--bg-surface);
   border-radius: 22px;
@@ -412,6 +406,178 @@ body {
   margin-top: auto;
   font-size: 13px;
   opacity: 0.9;
+}
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.kpi-value {
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.kpi-detail {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.chart-card-header h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.donut-chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-center strong {
+  font-size: 28px;
+  display: block;
+}
+
+.donut-center span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 220px;
+  padding-top: 8px;
+}
+
+.bar-chart-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  gap: 8px;
+}
+
+.bar-chart-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #4561db, #1d2b8f);
+  border-radius: 999px 999px 4px 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  padding: 6px 2px;
+}
+
+.dashboard-lists {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.alert-card .alert-list {
+  margin-top: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  font-size: 12px;
+  color: #111827;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.alert-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.status-card .status-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
 }
 
 .dash-stat-row {
@@ -612,10 +778,10 @@ body {
 
 .data-table {
   border-radius: 18px;
-  overflow: hidden;
   background: #fff;
   box-shadow: var(--shadow-soft);
   border: 1px solid #e5e7eb;
+  overflow: hidden;
 }
 
 .data-table-header,
@@ -643,6 +809,11 @@ body {
 
 .data-table-row:nth-child(even) {
   background: #ffffff;
+}
+
+.data-table-body {
+  max-height: 520px;
+  overflow-y: auto;
 }
 
 .col-actions {
@@ -682,6 +853,26 @@ body {
   padding: 16px;
   font-size: 14px;
   color: var(--text-muted);
+}
+
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.table-pagination-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-pagination .btn-outline {
+  min-width: 140px;
 }
 
 /* ---------- TAGS ESTADO NICHOS ---------- */

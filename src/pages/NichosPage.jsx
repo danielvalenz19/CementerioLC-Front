@@ -9,6 +9,8 @@ import { getCatalogoManzanas } from "../api/catalogos";
 import Modal from "../components/common/Modal";
 import Select from "react-select";
 import selectStyles from "../components/common/selectStyles";
+import TablePagination from "../components/common/TablePagination";
+import usePagination from "../hooks/usePagination";
 
 const ESTADOS = ["Disponible", "Reservado", "Ocupado"];
 const ESTADO_OPTIONS = ESTADOS.map((estado) => ({
@@ -33,6 +35,7 @@ function NichosPage() {
   const [editing, setEditing] = useState(null);
 
   const [selectedNicho, setSelectedNicho] = useState(null); // para panel de detalle
+  const nichosPagination = usePagination(nichos);
 
   // Campos del formulario de creación/edición
   const [formData, setFormData] = useState({
@@ -299,56 +302,69 @@ function NichosPage() {
             No se encontraron nichos con estos filtros.
           </div>
         ) : (
-          <div className="data-table">
-            <div className="data-table-header">
-              <div>Manzana</div>
-              <div>N° Nicho</div>
-              <div>Estado</div>
-              <div>Propietario</div>
-              <div>Difunto</div>
-              <div className="col-actions">Acciones</div>
-            </div>
-            {nichos.map((n) => (
-              <div key={n.id} className="data-table-row">
-                <div>{getManzanaNombre(n)}</div>
-                <div>{n.numero || n.num || n.id}</div>
-                <div>
-                  <span
-                    className={`tag tag-${
-                      (n.estado || "").toLowerCase() || "default"
-                    }`}
-                  >
-                    {n.estado || "N/D"}
-                  </span>
-                </div>
-                <div>{getPropietarioNombre(n)}</div>
-                <div>{getDifuntoNombre(n)}</div>
-                <div className="col-actions">
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => setSelectedNicho(n)}
-                  >
-                    Ver
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => openEditModal(n)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-danger-ghost"
-                    onClick={() => handleDelete(n)}
-                  >
-                    Eliminar
-                  </button>
-                </div>
+          <>
+            <div className="data-table">
+              <div className="data-table-header">
+                <div>Manzana</div>
+                <div>N° Nicho</div>
+                <div>Estado</div>
+                <div>Propietario</div>
+                <div>Difunto</div>
+                <div className="col-actions">Acciones</div>
               </div>
-            ))}
-          </div>
+              <div className="data-table-body">
+                {nichosPagination.pageItems.map((n) => (
+                  <div key={n.id} className="data-table-row">
+                    <div>{getManzanaNombre(n)}</div>
+                    <div>{n.numero || n.num || n.id}</div>
+                    <div>
+                      <span
+                        className={`tag tag-${
+                          (n.estado || "").toLowerCase() || "default"
+                        }`}
+                      >
+                        {n.estado || "N/D"}
+                      </span>
+                    </div>
+                    <div>{getPropietarioNombre(n)}</div>
+                    <div>{getDifuntoNombre(n)}</div>
+                    <div className="col-actions">
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => setSelectedNicho(n)}
+                      >
+                        Ver
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => openEditModal(n)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-danger-ghost"
+                        onClick={() => handleDelete(n)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <TablePagination
+              total={nichosPagination.total}
+              rangeStart={nichosPagination.rangeStart}
+              rangeEnd={nichosPagination.rangeEnd}
+              onPrev={nichosPagination.prevPage}
+              onNext={nichosPagination.nextPage}
+              canPrev={nichosPagination.canPrev}
+              canNext={nichosPagination.canNext}
+            />
+          </>
         )}
       </div>
 
