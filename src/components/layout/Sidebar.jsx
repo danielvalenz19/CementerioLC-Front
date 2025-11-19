@@ -9,7 +9,11 @@ const navItems = [
   { label: "Arrendamientos", path: "/app/arrendamientos" },
   { label: "Propietarios", path: "/app/propietarios" },
   { label: "Recibos", path: "/app/recibos" },
+  { label: "Tarifas", path: "/app/tarifas" },
+  { label: "Alertas", path: "/app/alertas" },
+  { label: "Reportes", path: "/app/reportes" },
   { label: "Perfil", path: "/app/perfil" },
+  { label: "Auditoría", path: "/app/auditoria" },
 ];
 
 function Sidebar({ currentPath }) {

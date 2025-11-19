@@ -17,6 +17,10 @@ import SolicitudDetallePage from "./pages/SolicitudDetallePage";
 import ArrendamientosPage from "./pages/ArrendamientosPage";
 import ArrendamientoDetallePage from "./pages/ArrendamientoDetallePage";
 import RecibosPage from "./pages/RecibosPage";
+import TarifasPage from "./pages/TarifasPage";
+import AlertasPage from "./pages/AlertasPage";
+import ReportesPage from "./pages/ReportesPage";
+import AuditoriaPage from "./pages/AuditoriaPage";
 import AppLayout from "./components/layout/AppLayout";
 
 // Ruta protegida: exige access_token en localStorage
@@ -69,6 +73,14 @@ function App() {
           <Route path="propietarios/:id" element={<PropietarioDetallePage />} />
           {/* /app/recibos */}
           <Route path="recibos" element={<RecibosPage />} />
+          {/* /app/tarifas */}
+          <Route path="tarifas" element={<TarifasPage />} />
+          {/* /app/alertas */}
+          <Route path="alertas" element={<AlertasPage />} />
+          {/* /app/reportes */}
+          <Route path="reportes" element={<ReportesPage />} />
+          {/* /app/auditoria */}
+          <Route path="auditoria" element={<AuditoriaPage />} />
           {/* /app/perfil */}
           <Route path="perfil" element={<ProfilePage />} />
         </Route>
