@@ -25,9 +25,9 @@ function NichosPage() {
     estado: "",
     q: "",
   });
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const pageSize = 20;
-  const [totalRecords, setTotalRecords] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,19 +61,23 @@ function NichosPage() {
     }
   }
 
-  async function loadNichos(customPage = page, customFilters = filters) {
+  async function loadNichos(pageToLoad = 1) {
+    const targetPage = Math.max(1, pageToLoad);
     setLoading(true);
     setError("");
     try {
-      const response = await listNichos({
-        ...customFilters,
-        page: customPage,
+      const { items, meta } = await listNichos({
+        ...filters,
+        page: targetPage,
         pageSize,
       });
 
-      const items = Array.isArray(response?.data) ? response.data : [];
-      setNichos(items);
-      setTotalRecords(response?.total ?? items.length ?? 0);
+      const safeItems = Array.isArray(items) ? items : [];
+      setNichos(safeItems);
+      const total =
+        meta && typeof meta.count === "number" ? meta.count : safeItems.length;
+      setTotalItems(total);
+      setCurrentPage(meta?.page || targetPage);
     } catch (err) {
       console.error(err);
       setError("No se pudieron cargar los nichos.");
@@ -94,28 +98,21 @@ function NichosPage() {
 
   const applyFilters = (e) => {
     e?.preventDefault();
-    setPage(1);
     loadNichos(1);
   };
 
   const resetFilters = () => {
     const defaults = { manzanaId: "", estado: "", q: "" };
     setFilters(defaults);
-    setPage(1);
-    loadNichos(1, defaults);
+    setTimeout(() => loadNichos(1), 0);
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  const rangeStart = totalRecords === 0 ? 0 : (page - 1) * pageSize + 1;
+  const maxPage = Math.max(1, Math.ceil(totalItems / pageSize));
+  const canPrev = currentPage > 1;
+  const canNext = currentPage < maxPage;
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const rangeEnd =
-    totalRecords === 0 ? 0 : Math.min(page * pageSize, totalRecords);
-
-  const goToPage = (nextPage) => {
-    const target = Math.min(Math.max(1, nextPage), totalPages);
-    if (target === page) return;
-    setPage(target);
-    loadNichos(target);
-  };
+    totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
 
   const openCreateModal = () => {
     setEditing(null);
@@ -175,7 +172,7 @@ function NichosPage() {
 
       setModalOpen(false);
       setEditing(null);
-      await loadNichos();
+      await loadNichos(currentPage);
     } catch (err) {
       console.error(err);
       setError("Error al guardar el nicho. Revisa los datos.");
@@ -199,7 +196,7 @@ function NichosPage() {
       if (selectedNicho?.id === n.id) {
         setSelectedNicho(null);
       }
-      await loadNichos();
+      await loadNichos(currentPage);
     } catch (err) {
       console.error(err);
       setError(
@@ -248,7 +245,7 @@ function NichosPage() {
             <h2>Nichos</h2>
             <p>
               Gestión de espacios. Total:{" "}
-              <strong>{totalRecords}</strong> registros.
+              <strong>{totalItems}</strong> registros.
             </p>
           </div>
           <button className="btn-primary" onClick={openCreateModal}>
@@ -382,13 +379,13 @@ function NichosPage() {
               </div>
             </div>
             <TablePagination
-              total={totalRecords}
+              total={totalItems}
               rangeStart={rangeStart}
               rangeEnd={rangeEnd}
-              onPrev={() => goToPage(page - 1)}
-              onNext={() => goToPage(page + 1)}
-              canPrev={page > 1}
-              canNext={page < totalPages}
+              onPrev={() => loadNichos(currentPage - 1)}
+              onNext={() => loadNichos(currentPage + 1)}
+              canPrev={canPrev}
+              canNext={canNext}
             />
           </>
         )}

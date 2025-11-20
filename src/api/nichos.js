@@ -13,8 +13,15 @@ export async function listNichos({ manzanaId, estado, q, page, pageSize } = {}) 
 
   const res = await api.get("/api/nichos", { params });
 
-  // El backend ahora nos devolverá { data: [...], total: 5000 }
-  return res.data;
+  const payload = res.data || {};
+  const items = Array.isArray(payload.data) ? payload.data : [];
+  const meta = {
+    page: payload.page || 1,
+    pageSize: payload.pageSize || items.length,
+    count: typeof payload.count === "number" ? payload.count : items.length,
+  };
+
+  return { items, meta };
 }
 
 export async function getNichoById(id) {
