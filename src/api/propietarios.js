@@ -3,7 +3,7 @@ import api from "./client";
 // LISTA CON BÚSQUEDA (nombre/DPI)
 export async function listPropietarios(search = "") {
   const params = {};
-  if (search) params.search = search;
+  if (search) params.q = search;
 
   const res = await api.get("/api/propietarios", { params });
   const payload = res.data;

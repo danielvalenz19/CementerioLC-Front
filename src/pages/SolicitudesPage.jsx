@@ -11,6 +11,11 @@ import usePagination from "../hooks/usePagination";
 
 const ESTADOS = ["Todos", "Pendiente", "Aprobada", "Rechazada"];
 
+function getEstadoLabel(estado) {
+  if (estado === "Pendiente") return "En Trámite";
+  return estado;
+}
+
 function getEstadoTagClass(estado) {
   if (estado === "Pendiente") return "tag-pendiente";
   if (estado === "Aprobada") return "tag-aprobada";
@@ -27,10 +32,10 @@ function getPropietarioNombre(s) {
 }
 
 function getNichoLabel(s) {
-  const num = s.nicho || s.nicho_numero || s.nichoId || s.nicho_id;
+  const num = s.nicho || s.nicho_numero || s.numero_nicho || s.nichoId || s.nicho_id;
   const manzana = s.manzana || s.manzana_nombre;
-  if (num && manzana) return `${manzana} · Nicho ${num}`;
-  if (num) return `Nicho ${num}`;
+  if (manzana && num) return `${manzana} - #${num}`;
+  if (num) return `Nicho #${num}`;
   return "-";
 }
 
@@ -261,10 +266,10 @@ function SolicitudesPage() {
                   <div>{s.id}</div>
                   <div>{s.fecha_solicitud || s.fecha || "-"}</div>
                   <div>{getPropietarioNombre(s)}</div>
-                  <div>{getNichoLabel(s)}</div>
+                  <div style={{ fontWeight: 500 }}>{getNichoLabel(s)}</div>
                   <div>
                     <span className={`tag ${getEstadoTagClass(s.estado)}`}>
-                      {s.estado || "N/D"}
+                      {getEstadoLabel(s.estado) || "N/D"}
                     </span>
                   </div>
                   <div className="col-actions">

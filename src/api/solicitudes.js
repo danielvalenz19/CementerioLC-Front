@@ -40,11 +40,11 @@ export async function createSolicitud(payload) {
   return res.data;
 }
 
-// APROBAR (opcional recibo_id)
-export async function aprobarSolicitud(id, reciboId) {
+// APROBAR (ahora recibe numero de recibo)
+export async function aprobarSolicitud(id, numeroRecibo) {
   const body = {};
-  if (reciboId && reciboId.trim() !== "") {
-    body.recibo_id = reciboId.trim();
+  if (numeroRecibo && numeroRecibo.trim() !== "") {
+    body.numero_recibo = numeroRecibo.trim();
   }
 
   const res = await api.post(`/api/solicitudes/${id}/aprobar`, body);

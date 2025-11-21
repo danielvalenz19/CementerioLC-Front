@@ -83,12 +83,19 @@ function PropietariosPage() {
 
   const openEditModal = (p) => {
     setEditing(p);
+    
+    // CORRECCIÓN: Unimos nombres y apellidos si no existe nombre_completo
+    const nombreParaFormulario =
+      p.nombre_completo ||
+      `${p.nombres || ""} ${p.apellidos || ""}`.trim();
+
     setFormData({
-      nombre_completo: p.nombre_completo || p.nombre || "",
+      nombre_completo: nombreParaFormulario,
       dpi: p.dpi || "",
       telefono: p.telefono || p.celular || "",
       direccion: p.direccion || p.domicilio || "",
     });
+    
     setModalOpen(true);
   };
 

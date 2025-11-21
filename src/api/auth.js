@@ -30,3 +30,21 @@ export async function doLogout({ allDevices = false } = {}) {
     localStorage.removeItem("user");
   }
 }
+
+export async function refreshToken() {
+  const token = localStorage.getItem("refresh_token");
+  if (!token) throw new Error("No hay refresh token");
+
+  const response = await api.post("/auth/refresh", {
+    refresh_token: token,
+  });
+
+  if (response.data.access_token) {
+    localStorage.setItem("access_token", response.data.access_token);
+  }
+  if (response.data.refresh_token) {
+    localStorage.setItem("refresh_token", response.data.refresh_token);
+  }
+
+  return response.data;
+}

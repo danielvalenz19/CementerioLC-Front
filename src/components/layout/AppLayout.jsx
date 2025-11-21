@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
+import SessionMonitor from "../common/SessionMonitor";
 import { getMe, doLogout } from "../../api/auth";
 
 function AppLayout() {
@@ -40,6 +41,7 @@ function AppLayout() {
 
   return (
     <div className="app-shell">
+      <SessionMonitor />
       <Sidebar currentPath={location.pathname} user={user} />
 
       <div className="app-main">

@@ -6,6 +6,11 @@ import {
   rechazarSolicitud,
 } from "../api/solicitudes";
 
+function getEstadoLabel(estado) {
+  if (estado === "Pendiente") return "En Trámite";
+  return estado;
+}
+
 function getEstadoTagClass(estado) {
   if (estado === "Pendiente") return "tag-pendiente";
   if (estado === "Aprobada") return "tag-aprobada";
@@ -13,25 +18,23 @@ function getEstadoTagClass(estado) {
   return "tag-default";
 }
 
-// CORREGIDO: Ahora busca nombres y apellidos para que no salga el guion "-"
 function getPropietarioNombre(s) {
   if (s.nombres || s.apellidos) {
     return `${s.nombres || ""} ${s.apellidos || ""}`.trim();
   }
-  return (
-    s.propietario_nombre ||
-    s.propietario ||
-    s.nombre_propietario ||
-    "-"
-  );
+  return s.propietario_nombre || s.propietario || "-";
 }
 
 function getNichoLabel(s) {
-  const num = s.nicho || s.nicho_numero || s.nichoId || s.nicho_id;
-  const manzana = s.manzana || s.manzana_nombre;
-  if (num && manzana) return `${manzana} · Nicho ${num}`;
-  if (num) return `Nicho ${num}`;
-  return "-";
+  const num = s.nicho || s.nicho_numero || s.numero_nicho;
+  const manzana =
+    s.manzana || s.manzana_nombre || (s.manzana_id ? `${s.manzana_id}` : "");
+  const manzanaDisplay = manzana
+    ? `Manzana ${manzana}`
+    : `Manzana ID ${s.manzana_id || "?"}`;
+
+  if (num) return `${manzanaDisplay} - Nicho #${num}`;
+  return "Nicho no identificado";
 }
 
 function SolicitudDetallePage() {
@@ -42,8 +45,7 @@ function SolicitudDetallePage() {
   const [loading, setLoading] = useState(true);
   const [accionLoading, setAccionLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const [reciboId, setReciboId] = useState("");
+  const [numeroRecibo, setNumeroRecibo] = useState("");
   const [motivoRechazo, setMotivoRechazo] = useState("");
 
   async function loadSolicitud() {
@@ -67,16 +69,24 @@ function SolicitudDetallePage() {
   const estaPendiente = solicitud?.estado === "Pendiente";
 
   const handleAprobar = async () => {
-    if (!window.confirm("¿Aprobar esta solicitud?")) return;
+    if (
+      !window.confirm(
+        "¿Aprobar esta solicitud? El nicho pasará a estado OCUPADO."
+      )
+    ) {
+      return;
+    }
+
     setAccionLoading(true);
     setError("");
 
     try {
-      await aprobarSolicitud(id, reciboId);
+      await aprobarSolicitud(id, numeroRecibo);
+      alert("Solicitud aprobada y nicho actualizado correctamente.");
       await loadSolicitud();
     } catch (err) {
       console.error(err);
-      setError("No se pudo aprobar la solicitud.");
+      setError(err.response?.data?.message || "No se pudo aprobar la solicitud.");
     } finally {
       setAccionLoading(false);
     }
@@ -89,7 +99,6 @@ function SolicitudDetallePage() {
     setError("");
     try {
       await rechazarSolicitud(id);
-      console.log("Motivo de rechazo:", motivoRechazo);
       await loadSolicitud();
     } catch (err) {
       console.error(err);
@@ -116,12 +125,9 @@ function SolicitudDetallePage() {
       <div className="section-header">
         <div>
           <h2>Solicitud #{solicitud.id}</h2>
-          <p>Detalle de la solicitud de compra de nicho.</p>
+          <p>Detalle de la solicitud de compra.</p>
         </div>
-        <button
-          className="btn-outline"
-          onClick={() => navigate("/app/solicitudes")}
-        >
+        <button className="btn-outline" onClick={() => navigate("/app/solicitudes")}>
           Volver al listado
         </button>
       </div>
@@ -131,29 +137,22 @@ function SolicitudDetallePage() {
           <div className="sol-card-header">
             <span className="sol-badge">Solicitud de compra</span>
             <div className="sol-header-main">
-              <span>Solicitud #{solicitud.id}</span>
-              <span>
-                <span
-                  className={`tag ${getEstadoTagClass(solicitud.estado)}`}
-                >
-                  {solicitud.estado}
-                </span>
+              <span>{getNichoLabel(solicitud)}</span>
+              <span className={`tag ${getEstadoTagClass(solicitud.estado)}`}>
+                {getEstadoLabel(solicitud.estado)}
               </span>
             </div>
             <p className="sol-sub">
-              Fecha: {solicitud.fecha_solicitud || solicitud.fecha || "N/D"}
+              Fecha solicitud: {solicitud.fecha_solicitud || solicitud.fecha || "N/D"}
             </p>
           </div>
 
           <div className="sol-rows">
             <div className="sol-row">
-              <span>Propietario</span>
+              <span>Solicitante / Propietario</span>
               <div>
                 {solicitud.propietario_id ? (
-                  <Link
-                    to={`/app/propietarios/${solicitud.propietario_id}`}
-                    className="sol-link"
-                  >
+                  <Link to={`/app/propietarios/${solicitud.propietario_id}`} className="sol-link">
                     {getPropietarioNombre(solicitud)}
                   </Link>
                 ) : (
@@ -163,14 +162,19 @@ function SolicitudDetallePage() {
             </div>
 
             <div className="sol-row">
-              <span>Nicho solicitado</span>
+              <span>Ubicación exacta</span>
               <strong>{getNichoLabel(solicitud)}</strong>
             </div>
-            
-            {/* IDs eliminados para limpiar la vista */}
+
+            {solicitud.recibo_id && (
+              <div className="sol-row">
+                <span>Recibo vinculado</span>
+                <strong>
+                  {solicitud.numero_recibo || `ID: ${solicitud.recibo_id}`}
+                </strong>
+              </div>
+            )}
           </div>
-          
-          {/* Texto eliminado */}
         </div>
 
         <div className="sol-card">
@@ -181,23 +185,30 @@ function SolicitudDetallePage() {
 
           {!estaPendiente ? (
             <p className="sol-info">
-              Esta solicitud ya fue <strong>{solicitud.estado}</strong>. No se
-              pueden realizar más acciones.
+              Esta solicitud está{" "}
+              <strong>{getEstadoLabel(solicitud.estado).toUpperCase()}</strong>.
+              {solicitud.estado === "Aprobada" &&
+                " El nicho ha sido marcado como ocupado."}
             </p>
           ) : (
             <div className="sol-actions">
-              <div>
-                <h5>Aprobar</h5>
-                <p className="sol-sub">
-                  Puedes asociar un <strong>recibo</strong> de pago si lo deseas.
+              <div
+                style={{ borderBottom: "1px solid #eee", paddingBottom: "16px" }}
+              >
+                <h5 style={{ color: "#166534", margin: "0 0 8px 0" }}>
+                  Opción A: Aprobar
+                </h5>
+                <p className="sol-sub" style={{ marginBottom: "10px" }}>
+                  Ingresa el número del recibo de pago para finalizar.
                 </p>
                 <label className="form-label">
-                  ID de recibo (opcional)
+                  Número de Recibo (Ej. A-1045)
                   <input
                     type="text"
-                    value={reciboId}
-                    onChange={(e) => setReciboId(e.target.value)}
-                    placeholder="Ej. REC-00123"
+                    value={numeroRecibo}
+                    onChange={(e) => setNumeroRecibo(e.target.value)}
+                    placeholder="Escribe el N° de recibo..."
+                    style={{ borderColor: "#bbf7d0" }}
                   />
                 </label>
                 <button
@@ -205,32 +216,24 @@ function SolicitudDetallePage() {
                   className="btn-primary"
                   disabled={accionLoading}
                   onClick={handleAprobar}
+                  style={{ width: "100%", marginTop: "8px" }}
                 >
-                  {accionLoading ? "Procesando..." : "Aprobar solicitud"}
+                  {accionLoading ? "Procesando..." : "✓ Aprobar y Asignar Nicho"}
                 </button>
               </div>
 
               <div>
-                <h5>Rechazar</h5>
-                <p className="sol-sub">
-                  El motivo solo se guarda a nivel de interfaz.
-                </p>
-                <label className="form-label">
-                  Motivo del rechazo (opcional)
-                  <input
-                    type="text"
-                    value={motivoRechazo}
-                    onChange={(e) => setMotivoRechazo(e.target.value)}
-                    placeholder="Ej. Documentos incompletos"
-                  />
-                </label>
+                <h5 style={{ color: "#b91c1c", margin: "0 0 8px 0" }}>
+                  Opción B: Rechazar
+                </h5>
                 <button
                   type="button"
                   className="btn-danger-ghost"
                   disabled={accionLoading}
                   onClick={handleRechazar}
+                  style={{ width: "100%" }}
                 >
-                  {accionLoading ? "Procesando..." : "Rechazar solicitud"}
+                  {accionLoading ? "Procesando..." : "✗ Rechazar Solicitud"}
                 </button>
               </div>
             </div>
