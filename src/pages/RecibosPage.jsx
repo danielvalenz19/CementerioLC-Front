@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { listRecibos, createRecibo } from "../api/recibos";
+import { fetchCatalogoPropietarios } from "../api/catalogosApi";
 import Modal from "../components/common/Modal";
 import TablePagination from "../components/common/TablePagination";
 import usePagination from "../hooks/usePagination";
+import Select from "react-select";
+import selectStyles from "../components/common/selectStyles";
 
 const moneyFormatter = new Intl.NumberFormat("es-GT", {
   style: "currency",
@@ -19,14 +22,22 @@ function RecibosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [propietariosOptions, setPropietariosOptions] = useState([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     numero_recibo: "",
     monto: "",
     fecha_pago: "",
+    propietario_id: null,
   });
   const [saving, setSaving] = useState(false);
   const recibosPagination = usePagination(recibos);
+
+  useEffect(() => {
+    loadRecibos();
+    loadPropietarios();
+  }, []);
 
   async function loadRecibos(filterState = filters) {
     setLoading(true);
@@ -42,10 +53,18 @@ function RecibosPage() {
     }
   }
 
-  useEffect(() => {
-    loadRecibos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  async function loadPropietarios() {
+    try {
+      const data = await fetchCatalogoPropietarios();
+      const opts = (Array.isArray(data) ? data : []).map((p) => ({
+        value: p.id,
+        label: `${p.nombres} ${p.apellidos} (DPI: ${p.dpi || "N/D"})`,
+      }));
+      setPropietariosOptions(opts);
+    } catch (err) {
+      console.error("Error cargando propietarios", err);
+    }
+  }
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -64,15 +83,33 @@ function RecibosPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.numero_recibo || !formData.monto || !formData.fecha_pago) {
+    if (
+      !formData.numero_recibo ||
+      !formData.monto ||
+      !formData.fecha_pago ||
+      !formData.propietario_id
+    ) {
+      alert("Número, monto, fecha y propietario son obligatorios.");
       return;
     }
 
     setSaving(true);
     try {
-      await createRecibo(formData);
+      const payload = {
+        ...formData,
+        propietario_id: formData.propietario_id
+          ? formData.propietario_id.value
+          : null,
+      };
+
+      await createRecibo(payload);
       setModalOpen(false);
-      setFormData({ numero_recibo: "", monto: "", fecha_pago: "" });
+      setFormData({
+        numero_recibo: "",
+        monto: "",
+        fecha_pago: "",
+        propietario_id: null,
+      });
       loadRecibos();
     } catch (err) {
       console.error(err);
@@ -205,7 +242,7 @@ function RecibosPage() {
                   >
                     {moneyFormatter.format(Number(r.monto || 0))}
                   </div>
-                  <div>{r.propietario_nombre || "-"}</div>
+                  <div>{r.propietario_nombre}</div>
                   <div>
                     <span
                       className="tag tag-default"
@@ -219,7 +256,7 @@ function RecibosPage() {
                       type="button"
                       className="btn-ghost"
                       onClick={() => handlePrint(r)}
-                      title="Imprimir/Descargar"
+                      title="Imprimir"
                     >
                       🖨️
                     </button>
@@ -258,7 +295,13 @@ function RecibosPage() {
             </button>
             <button
               className="btn-primary"
-              disabled={saving}
+              disabled={
+                saving ||
+                !formData.numero_recibo ||
+                !formData.monto ||
+                !formData.fecha_pago ||
+                !formData.propietario_id
+              }
               onClick={handleSave}
             >
               {saving ? "Guardando..." : "Registrar Pago"}
@@ -312,10 +355,25 @@ function RecibosPage() {
           />
         </label>
 
+        <label className="form-label" style={{ marginTop: 10 }}>
+          Asignar Propietario
+          <Select
+            options={propietariosOptions}
+            value={formData.propietario_id}
+            onChange={(opt) =>
+              setFormData((prev) => ({ ...prev, propietario_id: opt }))
+            }
+            placeholder="Buscar propietario..."
+            styles={selectStyles}
+            isClearable={false}
+            menuPortalTarget={document.body}
+            menuPosition="fixed"
+          />
+        </label>
+
         <p className="dash-muted" style={{ marginTop: 12 }}>
-          Nota: Para vincular este recibo a un Arrendamiento o Solicitud, hazlo
-          desde esos módulos. Aquí solo registras el pago en el sistema
-          contable.
+          Debes asignar el pago a un propietario para que quede vinculado en el
+          historial.
         </p>
       </Modal>
     </div>

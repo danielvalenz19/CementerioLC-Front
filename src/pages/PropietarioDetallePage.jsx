@@ -243,11 +243,6 @@ function PropietarioDetallePage() {
         </div>
       </div>
 
-      <p className="dash-muted" style={{ marginTop: 12 }}>
-        Tip: si quisieras llegar a este detalle desde la tabla de nichos,
-        solo haría falta enlazar el nombre del propietario a
-        <code> /app/propietarios/&lt;id&gt;</code>.
-      </p>
     </div>
   );
 }

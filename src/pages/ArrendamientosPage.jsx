@@ -180,12 +180,15 @@ function ArrendamientosPage() {
   };
 
   const handleSaveArrendamiento = async () => {
+    const reciboId = (formData.recibo_id || "").trim();
     if (
       !formData.propietario_id ||
       !formData.nicho_id ||
       !formData.fecha_inicio ||
-      !formData.fecha_fin
+      !formData.fecha_fin ||
+      !reciboId
     ) {
+      setError("Completa todos los campos obligatorios.");
       return;
     }
 
@@ -198,7 +201,7 @@ function ArrendamientosPage() {
       fecha_inicio: formData.fecha_inicio,
       fecha_fin: formData.fecha_fin,
       nombre_difunto: formData.nombre_difunto || null,
-      recibo_id: formData.recibo_id || null,
+      recibo_id: reciboId,
     };
 
     try {
@@ -386,7 +389,8 @@ function ArrendamientosPage() {
                 !formData.propietario_id ||
                 !formData.nicho_id ||
                 !formData.fecha_inicio ||
-                !formData.fecha_fin
+                !formData.fecha_fin ||
+                !(formData.recibo_id || "").trim()
               }
               onClick={handleSaveArrendamiento}
             >
@@ -491,7 +495,7 @@ function ArrendamientosPage() {
         </label>
 
         <label className="form-label">
-          ID de recibo (opcional)
+          ID de recibo
           <input
             type="text"
             value={formData.recibo_id}
@@ -499,6 +503,7 @@ function ArrendamientosPage() {
               handleFormChange("recibo_id", e.target.value)
             }
             placeholder="Ej. REC-00123"
+            required
           />
         </label>
       </Modal>

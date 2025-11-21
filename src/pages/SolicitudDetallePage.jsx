@@ -13,7 +13,11 @@ function getEstadoTagClass(estado) {
   return "tag-default";
 }
 
+// CORREGIDO: Ahora busca nombres y apellidos para que no salga el guion "-"
 function getPropietarioNombre(s) {
+  if (s.nombres || s.apellidos) {
+    return `${s.nombres || ""} ${s.apellidos || ""}`.trim();
+  }
   return (
     s.propietario_nombre ||
     s.propietario ||
@@ -64,7 +68,6 @@ function SolicitudDetallePage() {
 
   const handleAprobar = async () => {
     if (!window.confirm("¿Aprobar esta solicitud?")) return;
-
     setAccionLoading(true);
     setError("");
 
@@ -84,7 +87,6 @@ function SolicitudDetallePage() {
 
     setAccionLoading(true);
     setError("");
-
     try {
       await rechazarSolicitud(id);
       console.log("Motivo de rechazo:", motivoRechazo);
@@ -161,25 +163,14 @@ function SolicitudDetallePage() {
             </div>
 
             <div className="sol-row">
-              <span>Nicho</span>
+              <span>Nicho solicitado</span>
               <strong>{getNichoLabel(solicitud)}</strong>
             </div>
-
-            <div className="sol-row">
-              <span>ID Propietario</span>
-              <strong>{solicitud.propietario_id || "-"}</strong>
-            </div>
-
-            <div className="sol-row">
-              <span>ID Nicho</span>
-              <strong>{solicitud.nicho_id || "-"}</strong>
-            </div>
+            
+            {/* IDs eliminados para limpiar la vista */}
           </div>
-
-          <p className="dash-muted">
-            Una vez aprobada, la solicitud puede generar un arrendamiento y
-            marcar el nicho como ocupado, según la lógica de tu backend.
-          </p>
+          
+          {/* Texto eliminado */}
         </div>
 
         <div className="sol-card">
