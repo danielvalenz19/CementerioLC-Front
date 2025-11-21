@@ -26,3 +26,8 @@ export async function updateTarifa(id, data) {
   const res = await api.put(`/api/tarifas/${id}`, data);
   return res.data;
 }
+
+export async function deleteTarifa(id) {
+  const res = await api.delete(`/api/tarifas/${id}`);
+  return res.data;
+}

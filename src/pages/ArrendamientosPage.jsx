@@ -50,6 +50,15 @@ function getDifuntoNombre(a) {
   );
 }
 
+function sumarAnios(fechaStr, anios) {
+  if (!fechaStr) return "";
+  const date = new Date(fechaStr);
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+  adjustedDate.setFullYear(adjustedDate.getFullYear() + anios);
+  return adjustedDate.toISOString().split("T")[0];
+}
+
 function ArrendamientosPage() {
   const navigate = useNavigate();
 
@@ -176,7 +185,13 @@ function ArrendamientosPage() {
   };
 
   const handleFormChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+      if (field === "fecha_inicio") {
+        newData.fecha_fin = sumarAnios(value, 7);
+      }
+      return newData;
+    });
   };
 
   const handleSaveArrendamiento = async () => {
@@ -473,13 +488,28 @@ function ArrendamientosPage() {
           </label>
 
           <label className="form-label">
-            Fecha fin
+            Fecha fin (7 años automáticos)
             <input
               type="date"
               value={formData.fecha_fin}
               onChange={(e) => handleFormChange("fecha_fin", e.target.value)}
             />
           </label>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: "#e0e7ff",
+            padding: "10px",
+            borderRadius: "8px",
+            marginTop: "10px",
+            fontSize: "13px",
+            color: "#3730a3",
+            marginBottom: "10px",
+          }}
+        >
+          <strong>ℹ️ Arrendamiento Estándar:</strong> Duración de 7 años.
+          Costo sugerido: <strong>Q700.00</strong>.
         </div>
 
         <label className="form-label">

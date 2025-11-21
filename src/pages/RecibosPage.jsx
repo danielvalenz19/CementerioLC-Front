@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { listRecibos, createRecibo } from "../api/recibos";
+import { listTarifas } from "../api/tarifas";
 import { fetchCatalogoPropietarios } from "../api/catalogosApi";
 import Modal from "../components/common/Modal";
 import TablePagination from "../components/common/TablePagination";
@@ -23,6 +24,7 @@ function RecibosPage() {
   const [error, setError] = useState("");
 
   const [propietariosOptions, setPropietariosOptions] = useState([]);
+  const [tarifas, setTarifas] = useState([]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,6 +39,9 @@ function RecibosPage() {
   useEffect(() => {
     loadRecibos();
     loadPropietarios();
+    listTarifas().then((data) => {
+      setTarifas(Array.isArray(data) ? data : []);
+    });
   }, []);
 
   async function loadRecibos(filterState = filters) {
@@ -309,6 +314,39 @@ function RecibosPage() {
           </>
         }
       >
+        <label
+          className="form-label"
+          style={{ marginBottom: 10, display: "block" }}
+        >
+          Cargar Tarifa Estándar (Opcional)
+          <select
+            style={{
+              padding: "10px",
+              borderRadius: "10px",
+              border: "1px solid #e5e7eb",
+              width: "100%",
+              marginTop: "4px",
+            }}
+            onChange={(e) => {
+              const t = tarifas.find(
+                (x) => x.id === Number(e.target.value)
+              );
+              if (t) {
+                setFormData((prev) => ({ ...prev, monto: t.monto }));
+              }
+            }}
+          >
+            <option value="">
+              -- Seleccionar servicio (ej. Traspaso, Complemento) --
+            </option>
+            {tarifas.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.concepto} - Q{t.monto}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <div className="form-grid">
           <label className="form-label">
             Número de Recibo

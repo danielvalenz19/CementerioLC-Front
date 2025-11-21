@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { listTarifas, createTarifa, updateTarifa } from "../api/tarifas";
+import {
+  listTarifas,
+  createTarifa,
+  updateTarifa,
+  deleteTarifa,
+} from "../api/tarifas";
 import Modal from "../components/common/Modal";
 import TablePagination from "../components/common/TablePagination";
 import usePagination from "../hooks/usePagination";
@@ -116,6 +121,27 @@ function TarifasPage() {
     }
   };
 
+  const handleDelete = async (tarifa) => {
+    if (
+      !window.confirm(
+        `¿Estás seguro de eliminar la tarifa "${tarifa.concepto}"?`
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await deleteTarifa(tarifa.id);
+      await loadTarifas();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Error al eliminar la tarifa.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="section-header">
@@ -175,8 +201,17 @@ function TarifasPage() {
                     )}
                   </div>
                   <div className="col-actions">
-                    <button className="btn-ghost" onClick={() => openEditModal(t)}>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => openEditModal(t)}
+                    >
                       Editar
+                    </button>
+                    <button
+                      className="btn-danger-ghost"
+                      onClick={() => handleDelete(t)}
+                    >
+                      Eliminar
                     </button>
                   </div>
                 </div>
